@@ -1,6 +1,6 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto;
 
-public class UserDto {
+public class UserLoginDto {
     private String email;
     private String passwordHash;
     private Integer role;

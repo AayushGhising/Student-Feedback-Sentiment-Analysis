@@ -40,14 +40,15 @@ public class JWTService {
                 .signWith(getKey())
                 .compact();
     }
-    public String generateAccessToken(String email){
+    public String generateAccessToken(String email, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
+        claims.put("role", role); // Include role in the token
         return Jwts.builder()
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 2 * 60 * 1000)) // 2minutes
+                .setExpiration(new Date(System.currentTimeMillis() + 60 * 60 * 1000)) // 2 minutes
                 .signWith(getKey())
                 .compact();
     }
@@ -73,7 +74,7 @@ public class JWTService {
         return extractClaim(token, Claims::getSubject);
     }
 
-    private <T> T extractClaim(String token, Function<Claims, T> claimResolver){
+    public  <T> T extractClaim(String token, Function<Claims, T> claimResolver){
         final Claims claims = extractAllClaims(token);
         return claimResolver.apply(claims);
     }

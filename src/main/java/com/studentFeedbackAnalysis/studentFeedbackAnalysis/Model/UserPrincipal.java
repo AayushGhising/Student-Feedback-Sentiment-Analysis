@@ -1,7 +1,7 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Model;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.Collection;
@@ -17,7 +17,8 @@ public class UserPrincipal implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.emptyList();
+        // Add the role as an authority
+        return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().getName()));
     }
 
     @Override

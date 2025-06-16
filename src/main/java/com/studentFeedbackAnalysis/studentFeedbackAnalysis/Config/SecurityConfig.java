@@ -1,5 +1,6 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -26,17 +27,31 @@ public class SecurityConfig {
     @Autowired
     private UserDetailsService userDetailsService;
 
+
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(request -> request
-                        .requestMatchers("/login", "/refresh-token").permitAll()
+                        .requestMatchers("/login", "/refresh-token").permitAll() // Allow registration without auth for now
+                        .requestMatchers("/register").hasAuthority("Admin") // Re-enable this after fixing the roles
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(ex -> ex
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.getWriter().write("{\"statusCode\":401,\"message\":\"Unauthorized access\",\"data\":null}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setContentType("application/json");
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.getWriter().write("{\"statusCode\":403,\"message\":\"Access denied\",\"data\":null}");
+                        })
+                )
                 .build();
     }
 

@@ -34,7 +34,7 @@ public class SecurityConfig {
                 .csrf(customizer -> customizer.disable())
                 .authorizeHttpRequests(request -> request
                         .requestMatchers("/login", "/refresh-token").permitAll() // Allow registration without auth for now
-                        .requestMatchers("/register").hasAuthority("Admin") // Re-enable this after fixing the roles
+                        .requestMatchers("/register", "/users/{id}").hasAuthority("Admin") // Re-enable this after fixing the roles
                         .anyRequest().authenticated())
                 .httpBasic(Customizer.withDefaults())
                 .sessionManagement(session ->

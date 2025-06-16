@@ -3,6 +3,7 @@ package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Controller;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.StandardResponse;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserLoginDto;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserRegisterDto;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserUpdateDto;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -49,4 +50,28 @@ public class UserController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
+    @DeleteMapping("/users/{id}")
+    public ResponseEntity<StandardResponse<String>> deleteUser(@PathVariable Long id) {
+        userService.deleteUser(id);
+        StandardResponse<String> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "User deleted successfully",
+                null
+        );
+        return ResponseEntity.ok(response);
+    }
+
+//    @PutMapping("/users/{id}")
+//    public ResponseEntity<StandardResponse<String>> updateUser(
+//            @PathVariable Long id,
+//            @RequestBody UserUpdateDto userUpdateDto) {
+//        userUpdateDto.setId(id); // Ensure ID is set correctly
+//        String result = userService.updateUser(userUpdateDto);
+//        StandardResponse<String> response = new StandardResponse<>(
+//                HttpStatus.OK.value(),
+//                "User updated successfully",
+//                result
+//        );
+//        return ResponseEntity.ok(response);
+//    }
 }

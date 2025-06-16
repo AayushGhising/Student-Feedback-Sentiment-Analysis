@@ -77,7 +77,22 @@ public class CourseController {
     @PreAuthorize("hasAuthority('Admin')")
     public ResponseEntity<StandardResponse<CourseDto>> updateCourse(
             @PathVariable Long id,
-           @Valid @RequestBody CourseDto courseDto) {
+            @Valid @RequestBody CourseDto courseDto,
+            BindingResult bindingResult) {
+
+        if (bindingResult.hasErrors()) {
+            String errorMessage = bindingResult.getFieldErrors().stream()
+                    .map(error -> error.getField() + ": " + error.getDefaultMessage())
+                    .collect(Collectors.joining(", "));
+
+            StandardResponse<CourseDto> response = new StandardResponse<>(
+                    HttpStatus.BAD_REQUEST.value(),
+                    errorMessage,
+                    null
+            );
+            return ResponseEntity.badRequest().body(response);
+        }
+
         CourseDto updatedCourse = courseService.updateCourse(id, courseDto);
         StandardResponse<CourseDto> response = new StandardResponse<>(
                 HttpStatus.OK.value(),

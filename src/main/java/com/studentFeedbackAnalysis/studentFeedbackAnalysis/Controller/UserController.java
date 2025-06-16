@@ -50,7 +50,7 @@ public class UserController {
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-    @DeleteMapping("/users/{id}")
+    @DeleteMapping("/deleteUser/{id}")
     public ResponseEntity<StandardResponse<String>> deleteUser(@PathVariable Long id) {
         userService.deleteUser(id);
         StandardResponse<String> response = new StandardResponse<>(
@@ -61,17 +61,17 @@ public class UserController {
         return ResponseEntity.ok(response);
     }
 
-//    @PutMapping("/users/{id}")
-//    public ResponseEntity<StandardResponse<String>> updateUser(
-//            @PathVariable Long id,
-//            @RequestBody UserUpdateDto userUpdateDto) {
-//        userUpdateDto.setId(id); // Ensure ID is set correctly
-//        String result = userService.updateUser(userUpdateDto);
-//        StandardResponse<String> response = new StandardResponse<>(
-//                HttpStatus.OK.value(),
-//                "User updated successfully",
-//                result
-//        );
-//        return ResponseEntity.ok(response);
-//    }
+    @PutMapping("/updateUser/{id}")
+    public ResponseEntity<StandardResponse<String>> updateUser(
+            @PathVariable Long id,
+            @RequestBody UserUpdateDto userUpdateDto) {
+        userUpdateDto.setId(id); // Ensure ID is set correctly
+        String result = userService.updateUser(userUpdateDto);
+        StandardResponse<String> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "User updated successfully",
+                result
+        );
+        return ResponseEntity.ok(response);
+    }
 }

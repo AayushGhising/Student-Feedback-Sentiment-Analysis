@@ -2,6 +2,7 @@ package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service;
 
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserLoginDto;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserRegisterDto;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserUpdateDto;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Model.*;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Repo.*;
 import jakarta.transaction.Transactional;
@@ -191,10 +192,11 @@ public class UserService {
             }
             teacherRepo.save(teacher);
         }
+
     }
 
 
-
+    // Delete Users
     @Transactional
     public void deleteUser(Long userId) {
         User user = userRepo.findById(userId)
@@ -232,6 +234,136 @@ public class UserService {
 
         // Now delete the user
         userRepo.delete(user);
+    }
+
+
+    // Update Users
+    @Transactional
+    public String updateUser(UserUpdateDto dto) {
+        User user = userRepo.findById(dto.getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Update basic user information
+        if (dto.getFirstName() != null) {
+            user.setFirstName(dto.getFirstName());
+        }
+
+        if (dto.getLastName() != null) {
+            user.setLastName(dto.getLastName());
+        }
+
+        // Update email only if it's changed and not already taken
+        if (dto.getEmail() != null && !dto.getEmail().equals(user.getEmail())) {
+            if (userRepo.existsByEmail(dto.getEmail())) {
+                throw new RuntimeException("Email already in use");
+            }
+            user.setEmail(dto.getEmail());
+        }
+
+        // Update password if provided
+        if (dto.getPasswordHash() != null && !dto.getPasswordHash().isEmpty()) {
+            user.setPasswordHash(encoder.encode(dto.getPasswordHash()));
+        }
+
+        // Save the updated user
+        userRepo.save(user);
+
+        // Handle role-specific updates
+        Integer roleId = user.getRole().getId();
+
+        switch (roleId) {
+            case 1: // Admin
+                updateAdmin(user, dto);
+                break;
+            case 2: // Teacher
+                updateTeacher(user, dto);
+                break;
+            case 3: // Student
+                updateStudent(user, dto);
+                break;
+            default:
+                throw new RuntimeException("Invalid role ID");
+        }
+
+        return "User updated successfully";
+    }
+
+    private void updateAdmin(User user, UserUpdateDto dto) {
+        if (user.getAdmin() == null) {
+            throw new RuntimeException("User is not an admin");
+        }
+
+        Admin admin = user.getAdmin();
+
+        if (dto.getAdminId() != null) {
+            admin.setAdminId(dto.getAdminId());
+        }
+
+        adminRepo.save(admin);
+    }
+
+    private void updateTeacher(User user, UserUpdateDto dto) {
+        if (user.getTeacher() == null) {
+            throw new RuntimeException("User is not a teacher");
+        }
+
+        Teacher teacher = user.getTeacher();
+
+        if (dto.getTeacherId() != null) {
+            teacher.setTeacherId(dto.getTeacherId());
+        }
+
+        if (dto.getDepartment() != null) {
+            teacher.setDepartment(dto.getDepartment());
+        }
+
+        // Handle course assignments if provided
+        if (dto.getTeachingCourseIds() != null) {
+            if (teacher.getTeachingCourses() != null) {
+                teacher.getTeachingCourses().clear();
+            }
+
+            List<Course> courses = courseRepo.findAllById(dto.getTeachingCourseIds());
+            if (!courses.isEmpty()) {
+                teacher.setTeachingCourses(courses);
+            }
+        }
+
+        teacherRepo.save(teacher);
+    }
+
+    private void updateStudent(User user, UserUpdateDto dto) {
+        if (user.getStudent() == null) {
+            throw new RuntimeException("User is not a student");
+        }
+
+        Student student = user.getStudent();
+
+        if (dto.getStudentId() != null) {
+            student.setStudentId(dto.getStudentId());
+        }
+
+        if (dto.getIntakeYear() != null) {
+            student.setIntakeYear(dto.getIntakeYear());
+        }
+
+        if (dto.getProgramme() != null) {
+            student.setProgramme(dto.getProgramme());
+        }
+
+        // Handle course enrollments if provided
+        if (dto.getEnrolledCourseIds() != null) {
+            if (student.getEnrolledCourses() != null) {
+                student.getEnrolledCourses().clear();
+            }
+
+            List<Course> courses = courseRepo.findAllById(dto.getEnrolledCourseIds());
+            if (!courses.isEmpty()) {
+                student.setEnrolledCourses(courses);
+            }
+        }
+
+        studentRepo.save(student);
     }
 
 

@@ -30,16 +30,7 @@ public class JWTService {
             throw new RuntimeException(e);
         }
     }
-    public String generateToken(String email) {
-        Map<String, Object> claims = new HashMap<>();
-        return Jwts.builder()
-                .setClaims(claims)
-                .setSubject(email)
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 60 * 60 * 50))
-                .signWith(getKey())
-                .compact();
-    }
+
     public String generateAccessToken(String email, String role) {
         Map<String, Object> claims = new HashMap<>();
         claims.put("type", "access");
@@ -48,7 +39,7 @@ public class JWTService {
                 .setClaims(claims)
                 .setSubject(email)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 60 * 60 * 1000)) // 60 minutes
+                .setExpiration(new Date(System.currentTimeMillis() + 60 * 60 * 60 * 1000)) // 60 minutes
                 .signWith(getKey())
                 .compact();
     }

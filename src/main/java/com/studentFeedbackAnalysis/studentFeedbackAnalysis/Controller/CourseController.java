@@ -23,6 +23,7 @@ public class CourseController {
 
     // GET all courses - accessible to all authenticated users
     @GetMapping
+    @PreAuthorize("hasAuthority('Admin')")
     public ResponseEntity<StandardResponse<List<CourseDto>>> getAllCourses() {
         List<CourseDto> courses = courseService.getAllCourses();
         StandardResponse<List<CourseDto>> response = new StandardResponse<>(
@@ -35,6 +36,7 @@ public class CourseController {
 
     // GET course by ID - accessible to all authenticated users
     @GetMapping("/{id}")
+    @PreAuthorize("hasAuthority('Admin')")
     public ResponseEntity<StandardResponse<CourseDto>> getCourseById(@PathVariable Long id) {
         CourseDto course = courseService.getCourseById(id);
         StandardResponse<CourseDto> response = new StandardResponse<>(

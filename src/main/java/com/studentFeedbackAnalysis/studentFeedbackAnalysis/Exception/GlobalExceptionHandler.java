@@ -3,6 +3,7 @@ package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Exception;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.StandardResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
@@ -28,4 +29,16 @@ public class GlobalExceptionHandler {
         );
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    public ResponseEntity<StandardResponse<String>> handleAccessDeniedException(AccessDeniedException ex) {
+        StandardResponse<String> response = new StandardResponse<>(
+                HttpStatus.FORBIDDEN.value(),
+                "You don't have permission to perform this action",
+                null
+        );
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(response);
+    }
+
+
 }

@@ -1,15 +1,16 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Controller;
 
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.StandardResponse;
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserLoginDto;
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserRegisterDto;
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserUpdateDto;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.*;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -74,4 +75,136 @@ public class UserController {
         );
         return ResponseEntity.ok(response);
     }
+
+    // Get current user's details
+    @GetMapping("/users/me")
+    public ResponseEntity<StandardResponse<UserDetailsDto>> getCurrentUserDetails() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String email = auth.getName();
+
+        UserDetailsDto userDetails = userService.getUserDetailsByEmail(email);
+
+        StandardResponse<UserDetailsDto> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "User details retrieved successfully",
+                userDetails
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // Admin: Get a specific user's details
+    @GetMapping("/users/{id}")
+    public ResponseEntity<StandardResponse<UserDetailsDto>> getUserDetailsById(@PathVariable Long id) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("Admin"))) {
+            StandardResponse<UserDetailsDto> errorResponse = new StandardResponse<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Access denied. Only admins can view other users' details",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        UserDetailsDto userDetails = userService.getUserDetailsById(id);
+
+        StandardResponse<UserDetailsDto> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "User details retrieved successfully",
+                userDetails
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // Admin: Get all users
+    @GetMapping("/users")
+    public ResponseEntity<StandardResponse<List<UserDetailsDto>>> getAllUsers() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("Admin"))) {
+            StandardResponse<List<UserDetailsDto>> errorResponse = new StandardResponse<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Access denied. Only admins can view all users",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        List<UserDetailsDto> allUsers = userService.getAllUsers();
+
+        StandardResponse<List<UserDetailsDto>> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "All users retrieved successfully",
+                allUsers
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // Admin: Get all students
+    @GetMapping("/users/students")
+    public ResponseEntity<StandardResponse<List<UserDetailsDto>>> getAllStudents() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("Admin"))) {
+            StandardResponse<List<UserDetailsDto>> errorResponse = new StandardResponse<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Access denied. Only admins can view all students",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        List<UserDetailsDto> students = userService.getUsersByRole(3); // 3 is student role ID
+
+        StandardResponse<List<UserDetailsDto>> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "All students retrieved successfully",
+                students
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // Admin: Get all teachers
+    @GetMapping("/users/teachers")
+    public ResponseEntity<StandardResponse<List<UserDetailsDto>>> getAllTeachers() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("Admin"))) {
+            StandardResponse<List<UserDetailsDto>> errorResponse = new StandardResponse<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Access denied. Only admins can view all teachers",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        List<UserDetailsDto> teachers = userService.getUsersByRole(2); // 2 is teacher role ID
+
+        StandardResponse<List<UserDetailsDto>> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "All teachers retrieved successfully",
+                teachers
+        );
+        return ResponseEntity.ok(response);
+    }
+
+    // Admin: Get all admins
+    @GetMapping("/users/admins")
+    public ResponseEntity<StandardResponse<List<UserDetailsDto>>> getAllAdmins() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (!auth.getAuthorities().contains(new SimpleGrantedAuthority("Admin"))) {
+            StandardResponse<List<UserDetailsDto>> errorResponse = new StandardResponse<>(
+                    HttpStatus.FORBIDDEN.value(),
+                    "Access denied. Only admins can view all admins",
+                    null
+            );
+            return ResponseEntity.status(HttpStatus.FORBIDDEN).body(errorResponse);
+        }
+
+        List<UserDetailsDto> admins = userService.getUsersByRole(1); // 1 is admin role ID
+
+        StandardResponse<List<UserDetailsDto>> response = new StandardResponse<>(
+                HttpStatus.OK.value(),
+                "All admins retrieved successfully",
+                admins
+        );
+        return ResponseEntity.ok(response);
+    }
+
 }

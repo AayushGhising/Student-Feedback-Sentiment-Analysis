@@ -1,8 +1,6 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service;
 
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserLoginDto;
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserRegisterDto;
-import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.UserUpdateDto;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.*;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Model.*;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Repo.*;
 import jakarta.transaction.Transactional;
@@ -364,6 +362,98 @@ public class UserService {
         }
 
         studentRepo.save(student);
+    }
+
+
+    // Get Users
+    // Add these methods to your UserService class
+
+    public UserDetailsDto getUserDetailsByEmail(String email) {
+        User user = userRepo.findByEmail(email);
+        if (user == null) {
+            throw new RuntimeException("User not found");
+        }
+        return convertToUserDetailsDto(user);
+    }
+
+    public UserDetailsDto getUserDetailsById(Long id) {
+        User user = userRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+        return convertToUserDetailsDto(user);
+    }
+
+    public List<UserDetailsDto> getAllUsers() {
+        List<User> users = userRepo.findAll();
+        return users.stream()
+                .map(this::convertToUserDetailsDto)
+                .toList();
+    }
+
+    public List<UserDetailsDto> getUsersByRole(Integer roleId) {
+        // Create a role with the specified ID
+        Role role = new Role();
+        role.setId(roleId);
+
+        List<User> users = userRepo.findByRole(role);
+        return users.stream()
+                .map(this::convertToUserDetailsDto)
+                .toList();
+    }
+
+    private UserDetailsDto convertToUserDetailsDto(User user) {
+        UserDetailsDto dto = new UserDetailsDto();
+
+        // Set basic user information
+        dto.setId(user.getId());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setEmail(user.getEmail());
+        dto.setRoleName(user.getRole().getName());
+        dto.setCreatedAt(user.getCreatedAt());
+
+        // Set role-specific information
+        if (user.getStudent() != null) {
+            Student student = user.getStudent();
+            dto.setStudentId(student.getStudentId());
+            dto.setIntakeYear(student.getIntakeYear());
+            dto.setProgramme(student.getProgramme());
+
+            // Set enrolled courses
+            if (student.getEnrolledCourses() != null && !student.getEnrolledCourses().isEmpty()) {
+                dto.setEnrolledCourses(student.getEnrolledCourses().stream()
+                        .map(this::convertToCourseDto)
+                        .toList());
+            }
+        }
+
+        if (user.getTeacher() != null) {
+            Teacher teacher = user.getTeacher();
+            dto.setTeacherId(teacher.getTeacherId());
+            dto.setDepartment(teacher.getDepartment());
+
+            // Set teaching courses
+            if (teacher.getTeachingCourses() != null && !teacher.getTeachingCourses().isEmpty()) {
+                dto.setTeachingCourses(teacher.getTeachingCourses().stream()
+                        .map(this::convertToCourseDto)
+                        .toList());
+            }
+        }
+
+        if (user.getAdmin() != null) {
+            Admin admin = user.getAdmin();
+            dto.setAdminId(admin.getAdminId());
+        }
+
+        return dto;
+    }
+
+    private CourseDto convertToCourseDto(Course course) {
+        CourseDto dto = new CourseDto();
+        dto.setId(course.getId());
+        dto.setCourseCode(course.getCourseCode());
+        dto.setCourseName(course.getCourseName());
+        dto.setDescription(course.getDescription());
+        return dto;
     }
 
 

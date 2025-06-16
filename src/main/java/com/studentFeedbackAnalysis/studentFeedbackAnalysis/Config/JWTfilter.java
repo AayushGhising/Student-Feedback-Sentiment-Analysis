@@ -26,7 +26,7 @@ public class JWTfilter extends OncePerRequestFilter {
     ApplicationContext context;
 
     @Override
-    protected  void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
         String authHeader = request.getHeader("Authorization");
         String token = null;
         String email = null;
@@ -39,7 +39,8 @@ public class JWTfilter extends OncePerRequestFilter {
         if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
             UserDetails userDetails = context.getBean(MyUserDetailsService.class).loadUserByUsername(email);
 
-            if(jwtService.validateToken(token, userDetails, "access")){
+            if (jwtService.validateToken(token, userDetails, "access")) {
+                // Always set authentication if token is valid, regardless of role
                 UsernamePasswordAuthenticationToken authToken =
                         new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));

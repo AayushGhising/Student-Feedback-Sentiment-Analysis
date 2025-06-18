@@ -1,6 +1,7 @@
 package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Controller;
 
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Dto.*;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.TokenBlacklistService;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -17,6 +18,9 @@ import java.util.Map;
 public class UserController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TokenBlacklistService tokenBlacklistService;
 
     @PostMapping("/login")
     public ResponseEntity<StandardResponse<Map<String, String>>> login(@RequestBody UserLoginDto userLoginDto) {
@@ -206,5 +210,29 @@ public class UserController {
         );
         return ResponseEntity.ok(response);
     }
+
+    // Logout endpoint
+    @PostMapping("/logout")
+    public ResponseEntity<StandardResponse<String>> logout(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7);
+            tokenBlacklistService.blacklistToken(token);
+
+            StandardResponse<String> response = new StandardResponse<>(
+                    HttpStatus.OK.value(),
+                    "Logged out successfully",
+                    null
+            );
+            return ResponseEntity.ok(response);
+        }
+
+        StandardResponse<String> response = new StandardResponse<>(
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid token",
+                null
+        );
+        return ResponseEntity.badRequest().body(response);
+    }
+
 
 }

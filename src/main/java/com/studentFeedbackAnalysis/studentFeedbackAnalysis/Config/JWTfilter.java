@@ -2,6 +2,7 @@ package com.studentFeedbackAnalysis.studentFeedbackAnalysis.Config;
 
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.JWTService;
 import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.MyUserDetailsService;
+import com.studentFeedbackAnalysis.studentFeedbackAnalysis.Service.TokenBlacklistService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -23,6 +24,9 @@ public class JWTfilter extends OncePerRequestFilter {
     private JWTService jwtService;
 
     @Autowired
+    private TokenBlacklistService tokenBlacklistService;
+
+    @Autowired
     ApplicationContext context;
 
     @Override
@@ -33,6 +37,11 @@ public class JWTfilter extends OncePerRequestFilter {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             token = authHeader.substring(7);
+            // Check if token is blacklisted
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
             email = jwtService.extractEmail(token);
         }
 
